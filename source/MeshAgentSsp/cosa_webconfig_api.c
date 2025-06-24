@@ -655,7 +655,7 @@ bool  mesh_msgpack_decode(char* pString, int decode_size, eBlobType type)
                     publishRBUSEvent(CHANNEL_PLAN_COMMIT, (void *)"",handle);
                     channelplan_copy_to_global(channel_plan_data);
                 } else {
-                    MeshError("%s: Invalid channel plan blob received", __func__);
+                    MeshError("%s: Invalid channel plan blob received\n", __func__);
                     if (keepout_payload) {
                         free(keepout_payload);
                         keepout_payload = NULL;
