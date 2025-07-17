@@ -136,7 +136,7 @@ UploadToAmazonS3()
     else
         forced_https="false"
     fi
-    RemSignature=`echo $Key | sed "s/AWSAccessKeyId=.*Signature=.*&//g;s/\"//g;s/.*https/https/g"`
+    RemSignature=`echo $Key | sed "s/\.mworec\?.*/\.mworec?<Hidden_Credentials>/g"`
     if [ "$encryptionEnable" != "true" ]; then
         Key=\"$Key\"
     fi
