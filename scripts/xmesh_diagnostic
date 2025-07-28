@@ -1,0 +1,117 @@
+#!/bin/sh
+#Very primitive diagnostic tool for xMesh team triage purpose
+#for XLE work
+#TODO: Convert to more sophisticated tool
+xmesh_xle_dumps()
+{
+echo "--------- Debug Dumps ---------------"
+echo "wl0 interface---"
+echo "`ifconfig wl0`"
+echo "wl0 status---"
+echo "`wl -i wl0 status`"
+echo "wl1 interface---"
+echo "`ifconfig wl1`"
+echo "wl1 status---"
+echo "`wl -i wl1 status`"
+echo "wl2 interface---"
+echo "`ifconfig wl2`"
+echo "wl2 status---"
+echo "`wl -i wl2 status`"
+dump_tables="Wifi_VIF_State Wifi_Inet_Config Wifi_Master_State Connection_Manager_Uplink AWLAN_Node Manager"
+for tab in $dump_tables;do
+echo "$tab ---"
+echo "`/usr/opensync/tools/ovsh s $tab`"
+done
+echo "ip routes "`ip route show`""
+echo "ovs switch"
+echo "`ovs-vsctl show`"
+}
+xmesh_xle()
+{
+echo ""
+echo "====================Mesh Diagnostic Tool | XLE=================="
+if [ "`cat /sys/class/net/eth0/carrier`" == "1" ] && [ "`syscfg get ext_eb_port`" == "true" ];then
+ echo -e "\033[32mXLE Ethernet backhaul Link detected\033[m"
+ sta="eth0.123"
+else
+if [ "`wl -i wl0 bssid`" != "" ]; then
+ echo -e "\033[32mXLE is connected in 2.4GHz BHAUL BSSID: `wl -i wl0 bssid`\033[m"
+ sta="wl0"
+elif [ "`wl -i wl1 bssid`" != "" ]; then
+ echo -e "\033[32mXLE is connected in 5LGHz BHAUL `wl -i wl1 bssid`\033[m"
+ sta="wl1"
+elif [ "`wl -i wl2 bssid`" != "" ]; then
+ echo -e "\033[32mXLE is connected in 5UGHz BHAUL `wl -i wl2 bssid`\033[m"
+ sta="wl2"
+else
+ sta=""
+fi
+fi
+if [ "$sta" != "" ];then
+ wl0_ip="`ip addr show $sta | grep "inet\b" | awk '{print $2}' | cut -d/ -f1`"
+if [ "$wl0_ip" != "" ];then
+  echo -e "\033[32mXLE has IP on $sta: $wl0_ip\033[m"
+  if [ "`ip -d -4 link show g-$sta | grep gretap | cut -d" " -f9`" == "$wl0_ip" ];then
+   echo -e "\033[32mXLE GRETAP created with Right Endpoints\033[m"
+   if [ "`ovs-vsctl list-ports br-home | grep g-$sta`" != "" ];then
+    echo -e "\033[32mXLE GRE is present in the br-home\033[m"
+    brhome_ip="`ip addr show br-home | grep "inet\b" | awk '{print $2}' | cut -d/ -f1`"
+    if [ "$brhome_ip" != "" ];then
+     echo -e "\033[32mXLE br-home has valid IP $brhome_ip\033[m"
+     if [ "`ip route show default | grep 192.168.245.254`" != "" ];then
+      echo -e "\033[32mXLE Default Route is set properly\033[m"
+      if ping -c 1 192.168.245.254 &> /dev/null;then
+       echo -e "\033[32mXLE Main gateway is reachable\033[m"
+       if [ "$sta" != "eth0.123" ];then
+        bssid="`wl -i $sta bssid`"
+        if [ "`/usr/opensync/tools/ovsh s Wifi_VIF_Config -w if_name==$sta parent | grep -i $bssid`" != "" ];then
+         echo -e "\033[32mXLE parent bssid is present in Wifi_VIF_State\033[m"
+        else
+         echo -e "\033[31mXLE parent bssid is not present in Wifi_VIF_State\033[m"
+        fi
+       fi
+       if [ "`/usr/opensync/tools/ovsh s Manager | grep ACTIVE`" != "" ];then
+        brwan="`psmcli get dmsb.Mesh.WAN.Interface.Name`"
+        if [ "`ovs-vsctl list-ports $brwan | grep g-$sta.200`" != "" ];then
+         echo -e "\033[32mXLE WAN Failover bridge $brwan is created\033[m"
+        else
+         echo -e "\033[31mXLE WAN Failover Network not ready\033[m"
+        fi
+        echo -e "\033[32mXLE Connected to controller since "`/usr/opensync/tools/ovsh s Manager | grep ACTIVE | cut -d"\"" -f6`" seconds\033[m"
+        echo -e "\033[32mXLE Everything looks Good\033[m"
+       else
+        echo -e "\033[31mXLE Not connected to controller yet\033[m"
+       fi
+      else
+       echo -e "\033[31mXLE Main gateway is not reachable\033[m"
+      fi
+     else
+      echo -e "\033[31mXLE Default Route is not set properly\033[m"
+     fi
+    else
+     echo -e "\033[31mXLE br-home does not have valid IP\033[m"
+    fi
+   else
+    echo -e "\033[31mXLE doesnt have the required GRE\033[m"
+   fi
+  else
+   echo -e "\033[31mXLE doesnt have the required GRE\033[m"
+  fi
+ else
+  echo -e "\033[31mNo IP yet on wireless station\033[m"
+#tip2 check if udhcp is running on br-home, if g-wl0 is present in br-home, in main agteway pgd is created
+ fi
+else
+ echo -e "\033[31mWFO ERR: Pod not associated yet!!!\033[m"
+#tip1
+fi
+}
+if [ "`cat /version.txt | grep WNXL11BWL`" != "" ] || [ "`cat /version.txt | grep SIM`" != "" ];then
+ xmesh_xle_dumps
+ xmesh_xle
+elif [ "`cat /version.txt | grep CGM4331COM`" != "" ];then
+ xmesh_wfo_dumps
+ xmesh_wfo
+else
+ echo -e "\033[31mUnrecognized platform\033[m"
+fi
