@@ -115,6 +115,7 @@ BOOL is_bridge_mode_enabled();
 int getMeshErrorCode();
 void* handleMeshEnable(void *Args);
 void meshSetSyscfg(bool enable, bool commitSyscfg);
+void remove_interface(char *eth_interface, char * eth_wan);
 
 int Mesh_SyseventGetStr(const char *name, unsigned char *out_value, int outbufsz);
 int Mesh_SyseventSetStr(const char *name, unsigned char *value, int bufsz, bool toArm);
