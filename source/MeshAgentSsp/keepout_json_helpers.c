@@ -21,6 +21,7 @@
 #include <syscfg/syscfg.h>
 #include <string.h>
 #include <errno.h>
+#include <time.h>
 #include "secure_wrapper.h"
 #include "cosa_webconfig_api.h"
 #include "cosa_meshagent_internal.h"
@@ -54,6 +55,7 @@
         } else if (bandwidth == HT_20) {\
             cJSON_AddItemToObject(json_obj,"20",array);\
         }
+#define MIN_13_DIGIT 1000000000000
 
 extern COSA_DATAMODEL_MESHAGENT* g_pMeshAgent;
 
@@ -361,6 +363,35 @@ int get_json_object_size(cJSON *json_obj)
     return size;
 }
 
+bool get_current_time_in_ms(uint64_t* cur_time) {
+    struct timespec tms = {0};
+    if(clock_gettime(CLOCK_REALTIME, &tms)) {
+        MeshError("Failed to fetch appropriate time\n");
+        return false;
+    }
+
+    *cur_time = ((uint64_t)tms.tv_sec * 1000);
+    *cur_time += ((uint64_t)tms.tv_nsec/1000000);
+    return true;
+}
+
+bool is_valid_time(uint64_t expiry_time)
+{
+    uint64_t currTime = 0;
+    int ret = 0;
+    if((get_current_time_in_ms(&currTime)) == false) {
+        MeshError("%s : Failed to fetch the current time.\n",__func__);
+        return false;
+    }
+    ret = expiry_time / MIN_13_DIGIT;
+    if (ret > 0 && ret < 10) {
+        if (expiry_time > currTime) {
+            return true;
+        }
+    }
+    return false;
+}
+
 char * hd_recommendation_event_data_get(channel_plan_doc_t *channel_plan)
 {
     char *json_string = NULL;
@@ -385,8 +416,8 @@ char * hd_recommendation_event_data_get(channel_plan_doc_t *channel_plan)
         MeshError("%s plan_id is NULL for HD recommendation blob\n",__func__);
         goto exit;	
     }
-    if (channel_plan->HD_recc->expiry < (uint64_t)time(NULL)) {
-        MeshError("%s Blob time expired\n",__func__);
+    if (!is_valid_time(channel_plan->HD_recc->expiry)) {
+        MeshError("%s Blob time expired or invalid.\n",__func__);
         channel_plan->HD_recc->is_blob_expired = true;
         goto exit;
     }
