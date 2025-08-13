@@ -368,7 +368,7 @@ MeshSync_MsgItem meshSyncMsgArr[] = {
     {MESH_OPT_ENABLE_MODE_BROKER_PORT,      "MESH_OPT_ENABLE_MODE_BROKER_PORT",     "offline_mqtt_port"},
     {MESH_OPT_ENABLE_MODE_BROKER_TOPIC,     "MESH_OPT_ENABLE_MODE_BROKER_TOPIC",    "offline_mqtt_topic"},
     {MESH_WIFI_MOTION,                      "MESH_WIFI_MOTION",                     "wifi_motion_enable"},
-    {MESH_CA_CERT,                          "MESH_CA_CERT",                         "comodo_ca_enable"}
+    {MESH_CA_CERT,                          "MESH_CA_CERT",                         "comodo_rfc_enable"}
 #ifdef ONEWIFI
     ,
     {MESH_SYNC_STATUS,                      "MESH_SYNC_STATUS",                     "mesh_led_status"},
@@ -3005,6 +3005,10 @@ bool Mesh_SetMeshCaCert(bool enable, bool init, bool commitSyscfg)
             __FUNCTION__, commitSyscfg, enable);
         if(commitSyscfg) {
             ret = meshSetSyscfgBool(enable,MESH_CA_CERT);
+            if(!Mesh_SysCfgSetStr("comodo_ca_enable", (enable?"true":"false"), true))
+            {
+                MeshInfo("comodo_ca_enable old syscfg set to %s\n",(enable?"true":"false"));
+            }
         }
 
         if (ret == true || commitSyscfg == false)
@@ -5522,32 +5526,32 @@ static void Mesh_SetDefaults(ANSC_HANDLE hThisObject)
 
     out_val[0]='\0';
     if(Mesh_SysCfgGetStr(meshSyncMsgArr[MESH_CA_CERT].sysStr, out_val, sizeof(out_val)) != 0)
-    {   
-        MeshInfo("Syscfg error, Setting %s  to default false\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
-        Mesh_SetMeshCaCert(false,true,true);
+    {
+        MeshInfo("Syscfg error, Setting %s  to default true\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
+        Mesh_SetMeshCaCert(true,true,true);
     }
     else
-    {   
+    {
         rc = strcmp_s("true",strlen("true"),out_val,&ind);
         ERR_CHK(rc);
         if((ind == 0) && (rc == EOK))
-        {  
+        {
            MeshInfo("Setting %s from persistent storage value true\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
            Mesh_SetMeshCaCert(true,true,false);
         }
         else
-        {  
+        {
            rc = strcmp_s("false",strlen("false"),out_val,&ind);
            ERR_CHK(rc);
            if((ind == 0) && (rc == EOK))
-           {  
+           {
               MeshInfo("Setting %s from persistent storage value false\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
               Mesh_SetMeshCaCert(false,true,false);
            }
            else
            {
-              MeshInfo("Error, Setting %s  to default false\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
-              Mesh_SetMeshCaCert(false,true,true);
+              MeshInfo("Error, Setting %s  to default true\n",meshSyncMsgArr[MESH_CA_CERT].sysStr);
+              Mesh_SetMeshCaCert(true,true,true);
            }
         }
     }
