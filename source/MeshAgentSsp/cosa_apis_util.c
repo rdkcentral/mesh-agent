@@ -35,6 +35,9 @@
 #include "meshagent.h"
 #include "ansc_wrapper_base.h"
 #include "secure_wrapper.h"
+#ifdef CORE_NET_LIB
+#include <libnet.h>
+#endif
 
 #if defined(WAN_FAILOVER_SUPPORTED) || defined(ONEWIFI) || defined(GATEWAY_FAILOVER_SUPPORTED)
 #define MAX_TIME_IN_SEC   60
@@ -543,6 +546,9 @@ bool udhcpc_stop(char* ifname)
 int handle_uplink_bridge(char *ifname, char * bridge_ip, char *pod_addr, bool create)
 {
     int rc = -1;
+#ifdef CORE_NET_LIB
+    char ifname_buffer[MAX_IF_NAME_LEN];
+#endif
 
     if(create)
     {
@@ -563,7 +569,13 @@ int handle_uplink_bridge(char *ifname, char * bridge_ip, char *pod_addr, bool cr
         }
 
         MeshInfo("/sbin/ifconfig g-%s up\n", ifname);
+
+#ifdef CORE_NET_LIB
+        snprintf(ifname_buffer, sizeof(ifname_buffer), "g-%s", ifname);
+        rc = interface_up(ifname_buffer);
+#else
         rc = v_secure_system("/sbin/ifconfig g-%s up", ifname);
+#endif
         if(!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
         {
             MeshError("Failed to bring g-%s up\n", ifname);
@@ -587,7 +599,11 @@ int handle_uplink_bridge(char *ifname, char * bridge_ip, char *pod_addr, bool cr
         }
 
         MeshInfo("/sbin/ifconfig %s  up\n", GATEWAY_FAILOVER_BRIDGE);
+#ifdef CORE_NET_LIB
+        rc = interface_up(GATEWAY_FAILOVER_BRIDGE);
+#else
         rc = v_secure_system("/sbin/ifconfig %s  up", GATEWAY_FAILOVER_BRIDGE);
+#endif
         if(!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
         {
             MeshError("Failed to bring %s up\n", GATEWAY_FAILOVER_BRIDGE);
@@ -601,7 +617,12 @@ int handle_uplink_bridge(char *ifname, char * bridge_ip, char *pod_addr, bool cr
         {
             MeshWarning("Failed to remove bridge %s from g-%s\n",GATEWAY_FAILOVER_BRIDGE,sta.sta_ifname);
         }
+#ifdef CORE_NET_LIB
+        snprintf(ifname_buffer, sizeof(ifname_buffer), "g-%s", sta.sta_ifname);
+        rc = interface_delete(ifname_buffer);
+#else
         rc = v_secure_system("ip link del g-%s", sta.sta_ifname);
+#endif
         if(!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
         {
             MeshWarning("Failed to delete g-%s, maybe it doesn't exist?\n", sta.sta_ifname);
