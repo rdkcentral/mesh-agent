@@ -1,0 +1,733 @@
+{
+  "componentInterfaceDefinition": {
+    "name": "MeshAgent",
+    "moduleName": "RDKCENTRAL_MeshAgent",
+    "version": "0.1.0-draft",
+    "description": "WiFi Mesh networking management for RDK-B, including mesh enable/status control, backhaul configuration, and mesh diagnostics.",
+    "sourceBranch": "develop",
+    "sourceCommit": "1ade89689acd6a0cc4d3fe2bc5b33bfe71376fcd",
+    "generated": "2026-09-01",
+    "generatedBy": "tools/emit_spec_json.py --repo-root . --config-dir config --name MeshAgent --module-name RDKCENTRAL_MeshAgent --description WiFi Mesh networking management for RDK-B, including mesh enable/status control, backhaul configuration, and mesh diagnostics. --output mesh_interface.json"
+  },
+  "elements": {
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.GRE_ACC.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.HDRecommendation.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshGREBackhaulCache.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshPrioritization.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshRetryReduction.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshSecuritySchemaLegacy.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshWifiOptimization.Mode": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string(mapped)",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshWifiOptimization.MwoBroker": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.MeshWifiOptimization.ReinitPeriod": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "unsignedInt",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.OVS.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Recorder.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.Recorder.Upload.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SM_APP.Disable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.SecureBackhaul.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.XleAdaptiveFh.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.MWO.AugmentedInterference": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.MWO.ClientProfileData": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.MWO.Configs": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.MWO.SteeringProfileData": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.MWO.WifiMotionSettings": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.ChannelPlan.Data": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Data": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Enable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Opensync": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.PodEthernetBackhaulEnable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.State": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string(mapped)",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Status": {
+      "access": [
+        "read"
+      ],
+      "type": "string(mapped)",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.URL": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.UseComodoCa": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.X_RDKCENTRAL-COM_Connected-Client": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "string",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.XleModeCloudCtrlEnable": {
+      "access": [
+        "read",
+        "write"
+      ],
+      "type": "boolean",
+      "description": "",
+      "persistence": "",
+      "defaultValue": "",
+      "enumeration": [],
+      "flags": [
+        ""
+      ],
+      "source": {
+        "file": "TR181-MeshAgent.xml"
+      }
+    },
+    "Device.X_RDK_MeshAgent.EthernetBhaulUplink.Status": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT",
+        "ifdef WAN_FAILOVER_SUPPORTED"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetBoolHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.MWO.ClientProfileData": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.MWO.SteeringProfileData": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.Mesh.ChannelPlan.Commit": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.Mesh.ChannelPlan.Data.HDrecc": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.Mesh.ChannelPlan.Data.KeepOut": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.MeshBackHaul.Ifname": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT",
+        "ifdef WAN_FAILOVER_SUPPORTED"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.MeshWANLink.Interface.Name": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT",
+        "ifdef WAN_FAILOVER_SUPPORTED"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.MeshWANLink.Status": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT",
+        "ifdef WAN_FAILOVER_SUPPORTED"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetBoolHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    },
+    "Device.X_RDK_MeshAgent.Recorder.Enable": {
+      "access": [
+        "read",
+        "subscribeOnChange"
+      ],
+      "description": "",
+      "output": [],
+      "flags": [
+        "ifndef _RDKB_MESH_AGENT_C_",
+        "ifndef DBUS_SUPPORT"
+      ],
+      "source": {
+        "file": "cosa_mesh_apis.c",
+        "table": "meshRbusDataElements",
+        "getHandler": "rbusGetStringHandler",
+        "subscribeHandler": "rbusEventSubHandler"
+      },
+      "type": "string"
+    }
+  }
+}
