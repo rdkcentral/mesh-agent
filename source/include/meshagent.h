@@ -39,6 +39,7 @@
 #define PARTNER_REDIRECTORURL_PARAMNAME  "Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.MeshRedirectorURL"
 #define CHANNEL_KEEPOUT_FILE       "/nvram/mesh/channelPlan/channelKeepOut.json"
 #define HD_RECC_FILE              "/nvram/mesh/channelPlan/hd_recommendation.json"
+#define MAX_IF_NAME_LEN           124 
 
 typedef enum {
     POD_XHS_PORT=0,    //Send Event to meshAgent, once Pod is connected on XHS port

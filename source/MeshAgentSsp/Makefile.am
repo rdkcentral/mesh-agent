@@ -51,3 +51,8 @@ endif
 if FEATURE_RDK_LED_MANAGER_ENABLE
 libMeshAgentSsp_la_CPPFLAGS += -DRDK_LED_MANAGER_EXIST
 endif
+if CORE_NET_LIB_FEATURE_SUPPORT
+libMeshAgentSsp_la_LDFLAGS += -lnet
+libMeshAgentSsp_la_CPPFLAGS += -DCORE_NET_LIB
+endif
+

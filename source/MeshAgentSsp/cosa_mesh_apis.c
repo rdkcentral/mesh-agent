@@ -68,6 +68,9 @@
 #ifdef MESH_OVSAGENT_ENABLE
 #include "OvsAgentApi.h"
 #endif
+#ifdef CORE_NET_LIB
+#include <libnet.h>
+#endif
 #include "helpers.h"
 // TELEMETRY 2.0 //RDKB-26019
 #include <telemetry_busmessage_sender.h>
@@ -1094,13 +1097,22 @@ static void Mesh_logLinkChange(void)
 static int Mesh_CreateEthTunnel(int PodIdx, const char * bridge_ip, const char * pod_addr, const char * pod_dev, bool isOVSEnabled)
 {
     int rc = -1;
+#ifdef CORE_NET_LIB
+    char ethpod_if_name[MAX_IF_NAME_LEN] = {0};
+#endif
 
     MeshDebug("Entering %s with PodIdx = %d, bridge_ip = %s, pod_addr = %s, and pod_dev = %s\n", __FUNCTION__, PodIdx, bridge_ip, pod_addr, pod_dev);
  
     if(isOVSEnabled) {
         rc = v_secure_system("/usr/bin/ovs-vsctl del-port %s ethpod%d", MESHBHAUL_BR, PodIdx);
     }
+
+#ifdef CORE_NET_LIB
+    snprintf(ethpod_if_name, sizeof(ethpod_if_name), "ethpod%d", PodIdx);
+    rc = interface_delete(ethpod_if_name);
+#else
     rc = v_secure_system("ip link del ethpod%d", PodIdx);
+#endif
     if(!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
         MeshWarning("Failed to delete ethpod%d, maybe it doesn't exist?\n", PodIdx);
@@ -1113,13 +1125,16 @@ static int Mesh_CreateEthTunnel(int PodIdx, const char * bridge_ip, const char *
         return -1;
     }
 
+#ifdef CORE_NET_LIB
+    rc = interface_up(ethpod_if_name);
+#else
     rc = v_secure_system("/sbin/ifconfig ethpod%d up", PodIdx);
+#endif
     if(!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
         MeshError("Failed to bring ethpod%d up", PodIdx);
         return -1;
     }
-
     return 0;
 }
 
@@ -1132,8 +1147,41 @@ int Mesh_EthBhaulPodVlanSetup(int PodIdx, bool isOvsMode)
     char *tok_ethport = NULL;
 #endif
 
+#ifdef CORE_NET_LIB
+    libnet_status status;
+    char ethpod_if_name[MAX_IF_NAME_LEN] = {0};
+    char xhs_vlan[MAX_IF_NAME_LEN] = {0};
+    char lnf_vlan[MAX_IF_NAME_LEN] = {0};
+#endif
+
     MeshDebug("Entering %s with PodIdx = %d, and isOvsMode = %s\n", __FUNCTION__, PodIdx, (isOvsMode ? "true" : "false"));
 
+#ifdef CORE_NET_LIB
+    snprintf(ethpod_if_name, sizeof(ethpod_if_name), "ethpod%d", PodIdx);
+    status = vlan_create(ethpod_if_name, XHS_VLAN);
+    if (status != CNL_STATUS_SUCCESS) {
+        MeshError("Failed to create VLAN for XHS\n");
+        return status;
+    }
+    status = vlan_create(ethpod_if_name, LNF_VLAN);
+    if (status != CNL_STATUS_SUCCESS) {
+        MeshError("Failed to create VLAN for LNF\n");
+        return status;
+    }
+
+    snprintf(xhs_vlan, sizeof(xhs_vlan), "ethpod%d.%d", PodIdx, XHS_VLAN);
+    status = interface_up(xhs_vlan);
+    if (status != CNL_STATUS_SUCCESS) {
+        MeshError("Failed to bring up XHS VLAN interface\n");
+        return status;
+    }
+    snprintf(lnf_vlan, sizeof(lnf_vlan), "ethpod%d.%d", PodIdx, LNF_VLAN);
+    status = interface_up(lnf_vlan);
+    if (status != CNL_STATUS_SUCCESS) {
+        MeshError("Failed to bring up LNF VLAN interface\n");
+        return status;
+    }
+#else
     rc = v_secure_system("/sbin/vconfig add ethpod%d %d", PodIdx, XHS_VLAN);
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
@@ -1161,12 +1209,17 @@ int Mesh_EthBhaulPodVlanSetup(int PodIdx, bool isOvsMode)
         MeshError("Failed to bring up LNF VLAN interface\n");
         return rc;
     }
+#endif 
 
     if(isOvsMode) {
         rc = v_secure_system("/usr/bin/ovs-vsctl del-port %s ethpod%d.%d", XHS_BR, PodIdx, XHS_VLAN);
         rc = v_secure_system("/usr/bin/ovs-vsctl add-port %s ethpod%d.%d", XHS_BR, PodIdx, XHS_VLAN);
     } else {
+#ifdef CORE_NET_LIB
+        rc = interface_add_to_bridge(XHS_BR, xhs_vlan);
+#else
         rc = v_secure_system("brctl addif %s ethpod%d.%d", XHS_BR, PodIdx, XHS_VLAN);
+#endif
     }
 
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
@@ -1179,13 +1232,18 @@ int Mesh_EthBhaulPodVlanSetup(int PodIdx, bool isOvsMode)
         rc = v_secure_system("/usr/bin/ovs-vsctl del-port %s ethpod%d.%d", (isPaceXF3 ? LNF_BR_XF3 : LNF_BR), PodIdx, LNF_VLAN);
         rc = v_secure_system("/usr/bin/ovs-vsctl add-port %s ethpod%d.%d", (isPaceXF3 ? LNF_BR_XF3 : LNF_BR), PodIdx, LNF_VLAN);
     } else {
+#ifdef CORE_NET_LIB
+        rc = interface_add_to_bridge((isPaceXF3 ? LNF_BR_XF3 : LNF_BR), lnf_vlan);
+#else
         rc = v_secure_system("brctl addif %s ethpod%d.%d", (isPaceXF3 ? LNF_BR_XF3 : LNF_BR), PodIdx, LNF_VLAN);
+#endif
     }
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
         MeshError("Failed to add port (ethpod%d.%d) to LNF bridge (%s)\n", PodIdx, LNF_VLAN, (isPaceXF3 ? LNF_BR_XF3 : LNF_BR));
         return rc;
     }
+
 #ifdef WAN_FAILOVER_SUPPORTED
   //In case of ethernet gre creation in gateway, we will not be adding
   // vlan 200 gre on brRWAN and hence explicitly we need to create bridge here,
@@ -1204,11 +1262,22 @@ int Mesh_EthBhaulPodVlanSetup(int PodIdx, bool isOvsMode)
     }
 
     rc = v_secure_system("ovs-vsctl add-br %s",meshWANIfname);
+    #ifdef CORE_NET_LIB
+    status = interface_up(meshWANIfname);
+    #else
     rc = v_secure_system("ifconfig %s up",meshWANIfname);
+    #endif
     tok_ethport = strtok_r (ethports, " ",&context);
     while (tok_ethport != NULL){
+    #ifdef CORE_NET_LIB
+        char tok_eth_ifname[MAX_IF_NAME_LEN] = {0};
+        status = vlan_create(tok_ethport, MESH_EXTENDER_VLAN);
+        snprintf(tok_eth_ifname, sizeof(tok_eth_ifname), "%s.%d", tok_ethport, MESH_EXTENDER_VLAN);
+        status = interface_up(tok_eth_ifname);
+    #else
         rc = v_secure_system("vconfig add %s %d",tok_ethport,MESH_EXTENDER_VLAN);
         rc = v_secure_system("ifconfig %s.%d up",tok_ethport,MESH_EXTENDER_VLAN);
+    #endif
         MeshInfo("Bridge : port %s.%d is added to %s\n",tok_ethport,MESH_EXTENDER_VLAN,meshWANIfname);
         rc = v_secure_system("ovs-vsctl add-port %s %s.%d",meshWANIfname,tok_ethport,MESH_EXTENDER_VLAN);
         tok_ethport = strtok_r(NULL, " ",&context);
@@ -1222,6 +1291,9 @@ static void Mesh_EthPodTunnel(PodTunnel *tunnel)
     int rc = -1;
     int PodIdx = Mesh_getIpOctet(tunnel->podaddr, 4);
     bool isOvsMode = access(OVS_ENABLED, F_OK) == 0;
+#ifdef CORE_NET_LIB
+    char ethpod_if_name[MAX_IF_NAME_LEN] = {0};
+#endif
 
     if(isXB3Platform) {
         MeshInfo("%s Trigger to create tunnel in XB3 platform\n", __FUNCTION__);
@@ -1243,7 +1315,12 @@ static void Mesh_EthPodTunnel(PodTunnel *tunnel)
     if(isOvsMode) {
         rc = v_secure_system("/usr/bin/ovs-vsctl add-port %s ethpod%d", MESHBHAUL_BR, PodIdx);
     } else {
+#ifdef CORE_NET_LIB
+        snprintf(ethpod_if_name, sizeof(ethpod_if_name), "ethpod%d", PodIdx);
+        rc = interface_add_to_bridge(MESHBHAUL_BR, ethpod_if_name);
+#else
         rc = v_secure_system("brctl addif %s ethpod%d", MESHBHAUL_BR, PodIdx);
+#endif
     }
 
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
@@ -3192,17 +3269,34 @@ bool Mesh_SetXleModeCloudCtrlEnable(bool enable, bool init, bool commitSyscfg)
 static void Mesh_CreatePodVlan(MeshTunnelSetVlan *conf)
 {
     int rc = -1;
+    #ifdef CORE_NET_LIB
+    libnet_status status;
+    #endif
     /*CID 337467  Copy-paste error (COPY_PASTE_ERROR) copy_paste_error bridge in conf->bridge looks like a copy-paste error.*/
     rc = v_secure_system("ovs-vsctl add-br %s; /sbin/ifconfig %s up",conf->bridge,conf->bridge);
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
         MeshError("Failed to add bridge %s\n", conf->bridge);
     }
+
+    #ifdef CORE_NET_LIB
+    status = vlan_create(conf->parent_ifname,conf->vlan);
+    if (status != CNL_STATUS_SUCCESS)
+    {
+        MeshError("Failed to create VLAN %d on %s\n", conf->vlan, conf->parent_ifname);
+    }
+    status = interface_up(conf->ifname);
+    if (status != CNL_STATUS_SUCCESS)
+    {
+        MeshError("Failed to bring up interface %s\n", conf->ifname);
+    }
+    #else
     rc = v_secure_system("/sbin/vconfig add %s %d;/sbin/ifconfig %s up",conf->parent_ifname,conf->vlan,conf->ifname );
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
     {
         MeshError("Failed to add VLAN %d to %s\n", conf->vlan, conf->parent_ifname);
     }
+    #endif
 
     rc = v_secure_system("ovs-vsctl add-port %s %s",conf->bridge,conf->ifname);
     if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
@@ -4149,9 +4243,22 @@ int Mesh_vlan_network(char *ifname)
 {
     int rc = -1, i, numVLANs = 2;
     int VLANs[]={XHS_VLAN,LNF_VLAN};
-
+    
     for( i=0 ; i < numVLANs; i++ )
     {
+        #ifdef CORE_NET_LIB
+        libnet_status status;
+        char ifname_buffer[MAX_IF_NAME_LEN] = {0};
+        status = vlan_create(ifname,VLANs[i]);
+        if (status != CNL_STATUS_SUCCESS) {
+            MeshWarning("Failed to create VLAN %s %d\n",ifname,VLANs[i]);
+        }
+        snprintf(ifname_buffer, sizeof(ifname_buffer), "%s.%d", ifname, VLANs[i]);
+        status = interface_up(ifname_buffer);
+        if (status != CNL_STATUS_SUCCESS) {
+            MeshError("Failed to bring up  VLAN %s %d interface\n",ifname,VLANs[i]);
+        }
+        #else
         rc = v_secure_system("/sbin/vconfig add %s %d",ifname,VLANs[i]);
         if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
            MeshWarning("Failed to create VLAN %s %d\n",ifname,VLANs[i]);
@@ -4159,6 +4266,7 @@ int Mesh_vlan_network(char *ifname)
         rc = v_secure_system("/sbin/ifconfig %s.%d up",ifname,VLANs[i]);
         if (!WIFEXITED(rc) || WEXITSTATUS(rc) != 0)
            MeshError("Failed to bring up  VLAN %s %d interface\n",ifname,VLANs[i]);
+        #endif
     }
     return rc;
 }
