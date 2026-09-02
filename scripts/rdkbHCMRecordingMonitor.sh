@@ -29,7 +29,6 @@ NVRAM2_SUPPORTED="no"
 . /lib/rdk/utils.sh
 . $RDK_LOGGER_PATH/logfiles.sh
 UPLOAD_LOGS='false'
-UPTIME=`uptime`
 upload_protocol='HTTP'
 upload_httplink='None'
 DIRECT_MAX_ATTEMPTS=3
@@ -38,12 +37,28 @@ S3_URL=""
 OutputFile='/tmp/recorderhttpresult.txt'
 mwo_defaults_path='/usr/ccsp/meshwifioptimizer/MWO_Defaults'
 recording_stale_threshold=0
+http_code=0
+HTTP_CODE='/tmp/recorder_curl_http_code.txt'
 loop=1
 
 if [ -f /lib/rdk/exec_curl_mtls.sh ]
 then
    source /lib/rdk/exec_curl_mtls.sh
 fi
+
+asap_upload=false
+for arg in "$@";
+do
+    case $arg in
+        --asap)
+            asap_upload=true
+            shift
+            ;;
+        *)
+            echo_t "HCM: Invalid argument $arg"
+            ;;
+    esac
+done
 
 recorder_cleanup()
 {
@@ -191,11 +206,6 @@ UploadToAmazonS3()
         retries=`expr $retries + 1`
         sleep 30
     done
-
-    # Response after executing curl with the public key is 200, then file uploaded successfully.
-    if [ "$http_code" = "200" ];then
-        echo_t "HCM: RECORDER UPLOADED SUCCESSFULLY"
-    fi
 }
 
 HttpRecorderUpload()
@@ -208,10 +218,10 @@ HttpRecorderUpload()
             cd $UploadDir
         else
             echo_t "HCM: Directory was not found : $UploadDir"
-	    exit 1
+            exit 1
         fi
-        FILE_NAME=`ls | grep "mworec"`
-        if [ ! -z "$FILE_NAME" ];
+        file_list=`ls | grep "mworec"`
+        if [ ! -z "$file_list" ];
         then
             if [ -f '/tmp/DCMresponse.txt' ];
             then
@@ -223,16 +233,22 @@ HttpRecorderUpload()
                 S3_URL=`dmcli eRT retv Device.DeviceInfo.X_RDKCENTRAL-COM_Syndication.HCMRecordingUploadURL`
             fi
 
-            random_number=$((1 + RANDOM % 3601)) # Random number between 1 and 3600 seconds (1 hour)
-            echo_t "HCM: Putting the process to sleep for a random duration of $random_number seconds"
-            sleep $random_number
-            echo_t "HCM: files to be uploaded is : $FILE_NAME"
-            file_list=$FILE_NAME
+            if [ "$asap_upload" = "false" ]; then
+                random_number=$((1 + RANDOM % 3601)) # Random number between 1 and 3600 seconds (1 hour)
+                echo_t "HCM: Putting the process to sleep for a random duration of $random_number seconds"
+                sleep $random_number
+            fi
+            file_list=`ls | grep "mworec"`
+            if [ -z "$file_list" ]; then
+                echo_t "HCM: No files to upload after sleep"
+                return 0
+            fi
+            echo_t "HCM: files to be uploaded is : $file_list"
             for UploadFile in $file_list
             do
                 echo_t "HCM: Upload directory is : $UploadDir"
                 echo_t "HCM: Upload file is : $UploadFile"
-                echo_t "HCM: System Uptime is $UPTIME"
+                echo_t "HCM: System Uptime is : `uptime`"
                 echo_t "HCM: S3 URL is : $S3_URL"
                 UseDirectUpload
                 ret=$?
@@ -243,13 +259,13 @@ HttpRecorderUpload()
                 fi
  
                 if [ "$http_code" = "200" ];then
+                    http_code=0
                     UploadToAmazonS3
-                    ret=$?
-                    if [ "$ret" -ne "0" ]; then
-                        echo_t "HCM: HCM RECORDING FILE UPLOAD UNSUCCESSFUL TO S3"
-                    else
+                    if [ "$http_code" = "200" ]; then
                         echo_t "HCM: HCM RECORDING FILE UPLOADED SUCCESSFULLY TO S3"
                         rm -f $UploadFile
+                    else
+                        echo_t "HCM: HCM RECORDING FILE UPLOAD UNSUCCESSFUL TO S3"
                     fi
                 else
                     echo_t "HCM: Could not fetch HCM Recording upload S3 URL."
@@ -265,8 +281,20 @@ HttpRecorderUpload()
 main() 
 {
     echo_t "HCM: Starting HCM recording upload script"
-    UploadDir=$( awk '/"RE": *\{/,/}/' "$mwo_defaults_path" | grep '"dump_path"' | sed 's/.*: *"\([^"]*\)".*/\1/')
-    recording_stale_threshold=$(awk '/"recorder": *\{/,/}/' "$mwo_defaults_path" | grep -Eo '"recording_stale_threshold"[[:space:]]*:[[:space:]]*[0-9]+' | grep -Eo '[0-9]+')
+    # Get UploadDir with more flexible whitespace handling
+    UploadDir=$( awk '/"RE"[ \t]*:/,/}/' "$mwo_defaults_path" | grep '"dump_path"' | sed 's/.*"dump_path"[ \t]*:[ \t]*"\([^"]*\)".*/\1/')
+    if [ -z "$UploadDir" ]; then
+        echo_t "HCM: Failed to get dump_path from $mwo_defaults_path"
+        exit 1
+    fi
+    
+    # Get recording_stale_threshold with more flexible whitespace handling
+    recording_stale_threshold=$(awk '/"recorder"[ \t]*:[ \t]*\{/,/}/' "$mwo_defaults_path" | grep '"recording_stale_threshold"' | grep -Eo '[0-9]+')
+    if [ -z "$recording_stale_threshold" ]; then
+        echo_t "HCM: Failed to get recording_stale_threshold from $mwo_defaults_path,setting it to default"
+        recording_stale_threshold=86400
+    fi
+
     #Adding a 24-hour buffer to the recording_stale_threshold to prevent unnecessary deletions.
     recording_stale_threshold=$((recording_stale_threshold + 86400))
     HttpRecorderUpload
