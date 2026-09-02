@@ -2431,6 +2431,8 @@ get_eth_interface(char * eth_interface)
     char *val = NULL;
     int ret = false;
     int len = 0;
+    char buf[ 8 ] = { 0 };
+    char ethWanIfaceName[10] ={0} ;
 
     if (eth_interface == NULL)
     {
@@ -2446,6 +2448,22 @@ get_eth_interface(char * eth_interface)
             if(len > 0)
             {
                 snprintf(eth_interface, ETH_IFNAME_MAX_LEN, "%s", val);
+
+
+                if( 0 == syscfg_get( NULL, "eth_wan_enabled", buf, sizeof( buf ) ) )
+                {
+                    if ( strcmp (buf,"true") == 0 )
+                    {
+                        memset(buf,0,sizeof(buf));
+                        memset(ethWanIfaceName,0,sizeof(ethWanIfaceName));
+                        if( 0 == syscfg_get( NULL, "eth_wan_iface_name", ethWanIfaceName, sizeof( ethWanIfaceName ) ) )
+                        {
+                            remove_interface(eth_interface, ethWanIfaceName);
+                            MeshInfo("XB is in eth wan mode, removing eth wan interface %s updated interface list  %s\n",ethWanIfaceName, eth_interface);
+                        }
+                    }
+                }
+
                 ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(val);
                 ret = true;
             }

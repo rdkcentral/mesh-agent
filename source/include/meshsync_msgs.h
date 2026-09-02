@@ -51,8 +51,9 @@
 #define PRIV_BR              "brlan0"
 #define LNF_BR_XF3           "brlan6"
 
-#ifdef WAN_FAILOVER_SUPPORTED
 #define ETH_IFNAME_MAX_LEN   128
+
+#ifdef WAN_FAILOVER_SUPPORTED
 #define MESH_EXTENDER_VLAN   200
 #define MESH_ETHPORT        "eth"
 #endif

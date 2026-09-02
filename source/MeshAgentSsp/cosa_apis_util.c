@@ -514,6 +514,23 @@ bool udhcpc_start(char* ifname)
     return true;
 }
 
+void remove_interface(char *eth_interface, char *eth_wan) {
+    char *token, *rest = eth_interface;
+    char result[ETH_IFNAME_MAX_LEN] = "";
+    int first = 1;
+
+    while ((token = strtok_r(rest, " ", &rest))) {
+        if (strcmp(token, eth_wan) != 0) {
+            if (!first) {
+                strncat(result, " ", sizeof(result) - strlen(result) - 1);
+            }
+            strncat(result, token, sizeof(result) - strlen(result) - 1);
+            first = 0;
+        }
+    }
+    strncpy(eth_interface, result, ETH_IFNAME_MAX_LEN - 1);
+}
+
 bool udhcpc_stop(char* ifname)
 {
     int pid = udhcpc_pid(ifname);
